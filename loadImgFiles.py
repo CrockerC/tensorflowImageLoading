@@ -5,17 +5,16 @@ import threading
 
 
 class loadImgFiles:
-    def __init__(self, paths: List[str], img_shape=(224, 224, 3)):
+    def __init__(self, paths: List[str], img_shape=(75, 75, 3)):
         self.__paths = paths
         self.__img_shape = img_shape
-        self.__sem = threading.Semaphore()
-        self.__images = []
+        self.__images = [0] * len(self.__paths)
 
     def getImages(self):
         threads = []
 
-        for path in self.__paths:
-            thread = threading.Thread(target=self.__loadImage, args=(path,))
+        for i, path in enumerate(self.__paths):
+            thread = threading.Thread(target=self.__loadImage, args=(path, i))
             thread.start()
             threads.append(thread)
 
@@ -24,10 +23,9 @@ class loadImgFiles:
 
         return np.array(self.__images)
 
-    def __loadImage(self, path):
+    def __loadImage(self, path, ind):
         img = load_img(path, target_size=self.__img_shape)  # this is a PIL image
         x = np.array(img)  # Numpy array with shape shape
         x = x / 255
 
-        self.__images.append(x)
-
+        self.__images[ind] = x
